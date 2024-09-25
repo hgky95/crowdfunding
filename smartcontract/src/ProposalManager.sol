@@ -5,20 +5,30 @@ import {RoleManager} from "./RoleManager.sol";
 
 // Contract for managing student proposals
 contract ProposalManager is RoleManager {
+    enum ProposalStatus {
+        Pending,
+        Approved,
+        Rejected
+    }
+
     struct ProposalDetails {
         uint id;
         string title;
         string content;
         string plan;
         address student;
-        bool isApproved;
+        ProposalStatus status;
     }
 
     mapping(uint => ProposalDetails) public proposals;
     uint public proposalCount;
 
     event ProposalSubmitted(uint indexed id, address indexed student);
-    event ProposalApproved(uint indexed id, address indexed student);
+    event ProposalStatusChanged(
+        uint indexed id,
+        address indexed student,
+        ProposalStatus newStatus
+    );
 
     constructor(address initialAdmin) RoleManager(initialAdmin) {}
 
@@ -33,16 +43,22 @@ contract ProposalManager is RoleManager {
             _content,
             _plan,
             msg.sender,
-            false
+            ProposalStatus.Pending
         );
         emit ProposalSubmitted(proposalCount, msg.sender);
         proposalCount++;
     }
 
-    function approveProposal(uint _id) public onlyRole(COMMITTEE_ROLE) {
-        require(!proposals[_id].isApproved, "Proposal already approved");
-        proposals[_id].isApproved = true;
-        emit ProposalApproved(_id, proposals[_id].student);
+    function changeProposalStatus(
+        uint _id,
+        ProposalStatus _newStatus
+    ) public onlyRole(COMMITTEE_ROLE) {
+        require(
+            proposals[_id].status == ProposalStatus.Pending,
+            "Can only change status of pending proposals"
+        );
+        proposals[_id].status = _newStatus;
+        emit ProposalStatusChanged(_id, proposals[_id].student, _newStatus);
     }
 
     function getProposalsByStudent(
