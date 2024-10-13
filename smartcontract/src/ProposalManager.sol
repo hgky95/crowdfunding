@@ -2,9 +2,12 @@
 pragma solidity ^0.8.27;
 
 import {RoleManager} from "./RoleManager.sol";
+import {MilestoneManager} from "./MilestoneManager.sol";
+import {console} from "forge-std/console.sol";
 
 // Contract for managing student proposals
 contract ProposalManager is RoleManager {
+    MilestoneManager public milestoneManager;
     enum ProposalStatus {
         Pending,
         Approved,
@@ -14,8 +17,8 @@ contract ProposalManager is RoleManager {
     struct ProposalDetails {
         uint id;
         string title;
-        string content;
-        string plan;
+        string contentCID;
+        string planCID;
         address student;
         ProposalStatus status;
     }
@@ -30,18 +33,23 @@ contract ProposalManager is RoleManager {
         ProposalStatus newStatus
     );
 
-    constructor(address initialAdmin) RoleManager(initialAdmin) {}
+    constructor(
+        address initialAdmin,
+        address _milestoneManager
+    ) RoleManager(initialAdmin) {
+        milestoneManager = MilestoneManager(_milestoneManager);
+    }
 
     function submitProposal(
         string memory _title,
-        string memory _content,
-        string memory _plan
+        string memory _contentCID,
+        string memory _planCID
     ) public onlyRole(STUDENT_ROLE) {
         proposals[proposalCount] = ProposalDetails(
             proposalCount,
             _title,
-            _content,
-            _plan,
+            _contentCID,
+            _planCID,
             msg.sender,
             ProposalStatus.Pending
         );
@@ -81,7 +89,6 @@ contract ProposalManager is RoleManager {
                 index++;
             }
         }
-
         return studentProposals;
     }
 
@@ -93,5 +100,32 @@ contract ProposalManager is RoleManager {
             allProposals[i] = proposals[i];
         }
         return allProposals;
+    }
+
+    function createMilestonesForProposal(
+        uint _proposalId,
+        string[] memory _descriptions,
+        uint[] memory _fundingAmounts,
+        uint[] memory _deadlines
+    ) public onlyRole(COMMITTEE_ROLE) {
+        require(
+            proposals[_proposalId].status == ProposalStatus.Approved,
+            "Proposal not approved"
+        );
+        require(
+            _descriptions.length == _fundingAmounts.length &&
+                _fundingAmounts.length == _deadlines.length,
+            "Array lengths mismatch"
+        );
+
+        for (uint i = 0; i < _descriptions.length; i++) {
+            milestoneManager.createMilestonePlan(
+                _proposalId,
+                _descriptions[i],
+                _fundingAmounts[i],
+                _deadlines[i],
+                msg.sender
+            );
+        }
     }
 }

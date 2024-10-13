@@ -11,13 +11,27 @@ contract RoleManager is AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin);
     }
 
-    function addStudent(address student) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addStudent(
+        address student
+    ) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(STUDENT_ROLE, student);
     }
 
-    function addCommitteeMember(
+    function addCommittee(
         address member
-    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(COMMITTEE_ROLE, member);
+    }
+
+    function revokeStudent(
+        address student
+    ) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
+        _revokeRole(STUDENT_ROLE, student);
+    }
+
+    function revokeCommittee(
+        address member
+    ) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
+        _revokeRole(COMMITTEE_ROLE, member);
     }
 }
