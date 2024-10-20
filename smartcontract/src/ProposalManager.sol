@@ -102,6 +102,12 @@ contract ProposalManager is RoleManager {
         return allProposals;
     }
 
+    function getProposal(
+        uint _proposalId
+    ) public view returns (ProposalDetails memory) {
+        return proposals[_proposalId];
+    }
+
     function createMilestonesForProposal(
         uint _proposalId,
         string[] memory _descriptions,
