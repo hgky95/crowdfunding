@@ -15,13 +15,11 @@ contract FundManager is AccessControl, ReentrancyGuard {
     ProposalManager public proposalManager;
     IERC20 public usdc;
 
-    // Mapping from proposalId to total funds received
     mapping(uint => uint) public proposalFunds;
     // Mapping from proposalId to donor address to amount donated
     mapping(uint => mapping(address => uint)) public donations;
     // Mapping from proposalId to milestoneId to whether funds were disbursed
     mapping(uint => mapping(uint => bool)) public milestoneDisbursed;
-    // Mapping from proposalId to project status (true = stopped)
     mapping(uint => bool) public projectStopped;
 
     bytes32 public constant COMMITTEE_ROLE = keccak256("COMMITTEE_ROLE");
@@ -29,6 +27,12 @@ contract FundManager is AccessControl, ReentrancyGuard {
     event FundsDeposited(
         uint indexed proposalId,
         address indexed donor,
+        uint amount
+    );
+    event FundsDisbursed(
+        uint indexed proposalId,
+        uint indexed milestoneId,
+        address indexed student,
         uint amount
     );
 
@@ -85,6 +89,55 @@ contract FundManager is AccessControl, ReentrancyGuard {
         emit FundsDeposited(_proposalId, msg.sender, _amount);
     }
 
+    /**
+     * Disburses funds for a completed milestone
+     */
+    function disburseMilestoneFunds(
+        uint _proposalId,
+        uint _milestoneId
+    ) external nonReentrant {
+        require(!projectStopped[_proposalId], "Project is stopped");
+
+        // Get milestone details
+        MilestoneManager.MilestonePlan[] memory plans = milestoneManager
+            .getMilestonePlansByProposal(_proposalId);
+        require(_milestoneId < plans.length, "Invalid milestone ID");
+
+        MilestoneManager.MilestonePlan memory milestone = plans[_milestoneId];
+        require(
+            milestone.status == MilestoneManager.MilestoneStatus.Approved,
+            "Milestone must be approved"
+        );
+        require(
+            !milestoneDisbursed[_proposalId][_milestoneId],
+            "Funds already disbursed for this milestone"
+        );
+
+        ProposalManager.ProposalDetails memory proposal = proposalManager
+            .getProposal(_proposalId);
+        require(
+            proposal.status == ProposalManager.ProposalStatus.Approved,
+            "Proposal must be approved"
+        );
+        require(
+            proposalFunds[_proposalId] >= milestone.fundingAmount,
+            "Insufficient funds for milestone"
+        );
+
+        // Update state before transfer (Checks-Effects-Interactions pattern)
+        milestoneDisbursed[_proposalId][_milestoneId] = true;
+        proposalFunds[_proposalId] -= milestone.fundingAmount;
+
+        // Transfer USDC to student using SafeERC20
+        usdc.safeTransfer(proposal.student, milestone.fundingAmount);
+
+        emit FundsDisbursed(
+            _proposalId,
+            _milestoneId,
+            proposal.student,
+            milestone.fundingAmount
+        );
+    }
     /**
      * Returns the total amount of funds received for a proposal (including disbursed funds)
      * @param _proposalId The ID of the proposal
