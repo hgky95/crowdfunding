@@ -1,0 +1,14 @@
+blockchain:
+  network:
+    url: ${BLOCKCHAIN_URL:http://localhost:8545}
+  contract:
+    role-manager: ${ROLE_MANAGER_ADDRESS}
+    proposal-manager: ${PROPOSAL_MANAGER_ADDRESS}
+    milestone-manager: ${MILESTONE_MANAGER_ADDRESS}
+    fund-manager: ${FUND_MANAGER_ADDRESS}
+
+jwt:
+  expiration: 86400000 # 24 hours
+
+server:
+  port: 8080
