@@ -7,6 +7,8 @@ import com.crowdfunding.generated.ProposalManager;
 import com.crowdfunding.generated.RoleManager;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
@@ -15,9 +17,11 @@ import org.web3j.tx.gas.ContractGasProvider;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class Web3Service {
     private final Web3j web3j;
     private final ContractGasProvider gasProvider;
+    private final Credentials credentials;
 
     @Value("${contract.admin-manager.address}")
     private String adminManagerAddress;
@@ -31,8 +35,6 @@ public class Web3Service {
     @Value("${contract.fund-manager.address}")
     private String fundManagerAddress;
 
-    @Value("${contract.role-manager.address}")
-    private String roleManagerAddress;
 
     public AdminManager loadAdminManager(Credentials credentials) {
         return AdminManager.load(adminManagerAddress, web3j, credentials, gasProvider);
@@ -50,7 +52,9 @@ public class Web3Service {
         return FundManager.load(fundManagerAddress, web3j, credentials, gasProvider);
     }
 
-    public RoleManager loadRoleManager(Credentials credentials) {
-        return RoleManager.load(roleManagerAddress, web3j, credentials, gasProvider);
+    public RoleManager loadRoleManager() {
+        // RoleManager functionality is included in both MilestoneManager and ProposalManager
+        // So we can use either of them to load the RoleManager
+        return RoleManager.load(milestoneManagerAddress, web3j, credentials, gasProvider);
     }
 } 

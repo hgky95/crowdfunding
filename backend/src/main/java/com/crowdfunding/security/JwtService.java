@@ -2,23 +2,34 @@ package com.crowdfunding.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
+import javax.annotation.PostConstruct;
 
 @Service
 public class JwtService {
+
+    private SecretKey key;
 
     @Value("${jwt.secret}")
     private String secretKey;
 
     @Value("${jwt.expiration}")
     private Long jwtExpiration;
+
+    @PostConstruct
+    public void init() {
+        this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKey));
+    }
 
     public String generateToken(String address, String role) {
         Map<String, Object> claims = new HashMap<>();
@@ -40,7 +51,7 @@ public class JwtService {
             .subject(subject)
             .issuedAt(new Date(System.currentTimeMillis()))
             .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
-            .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
+            .signWith(key)
             .compact();
     }
 
@@ -50,9 +61,8 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        // Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
         return Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

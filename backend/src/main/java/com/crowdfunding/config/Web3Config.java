@@ -3,13 +3,19 @@ package com.crowdfunding.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.Keys;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.ContractGasProvider;
 import org.web3j.tx.gas.StaticGasProvider;
+
+import lombok.extern.slf4j.Slf4j;
+
 import java.math.BigInteger;
 
 @Configuration
+@Slf4j
 public class Web3Config {
 
     @Value("${web3j.client-address}")
@@ -29,5 +35,16 @@ public class Web3Config {
     @Bean
     public ContractGasProvider gasProvider() {
         return new StaticGasProvider(gasPrice, gasLimit);
+    }
+
+    @Bean
+    public Credentials credentials() {
+        try {
+            Credentials dummyCredentials = Credentials.create(Keys.createEcKeyPair());
+            return dummyCredentials;
+        } catch (Exception e) {
+            log.error("Error creating dummy credentials", e);
+        }
+        return null;
     }
 } 

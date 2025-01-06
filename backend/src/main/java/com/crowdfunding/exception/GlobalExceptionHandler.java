@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.security.SignatureException;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -33,17 +32,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(error, ex.getStatus());
     }
 
-    @ExceptionHandler(SignatureException.class)
-    public ResponseEntity<ErrorResponse> handleSignatureException(
-            SignatureException ex,
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(
+            AuthenticationException ex,
             HttpServletRequest request) {
-        log.error("Signature verification failed: ", ex);
+        log.error("Authentication failed: ", ex);
         
         ErrorResponse error = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-                .message("Invalid signature")
+                .status(ex.getStatus().value())
+                .error(ex.getStatus().getReasonPhrase())
+                .message(ex.getMessage())
                 .path(request.getRequestURI())
                 .build();
 
