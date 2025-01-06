@@ -57,7 +57,7 @@ export const AuthorizeButton = ({ onAuthorize }: AuthorizeButtonProps) => {
       }
 
       const { token, role } = await verifyResponse.json();
-      onAuthorize?.(token, role);
+      onAuthorize?.(token, role); // optional chaining operator to avoid error if onAuthorize is not defined
     } catch (error) {
       console.error("Authorization failed:", error);
     } finally {

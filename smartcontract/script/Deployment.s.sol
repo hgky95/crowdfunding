@@ -51,6 +51,17 @@ contract DeploymentScript is Script {
         console.log("AdminManager deployed at:", address(adminManager));
 
         // 6. Setup initial roles
+        // Grant DEFAULT_ADMIN_ROLE to AdminManager in both MilestoneManager and ProposalManager
+        milestoneManager.grantRole(
+            milestoneManager.DEFAULT_ADMIN_ROLE(),
+            address(adminManager)
+        );
+        proposalManager.grantRole(
+            proposalManager.DEFAULT_ADMIN_ROLE(),
+            address(adminManager)
+        );
+
+        // 6. Setup initial roles
         // Grant COMMITTEE_ROLE to FundManager in MilestoneManager
         // milestoneManager.addCommittee(address(fundManager));
 
