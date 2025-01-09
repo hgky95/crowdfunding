@@ -15,6 +15,7 @@ contract DeploymentScript is Script {
         // Get deployment private key from environment
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
+        console.log("Deployer address:", deployer);
 
         // Start broadcasting transactions
         vm.startBroadcast(deployerPrivateKey);

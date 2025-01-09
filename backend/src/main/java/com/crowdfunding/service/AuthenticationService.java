@@ -2,6 +2,7 @@ package com.crowdfunding.service;
 
 import com.crowdfunding.generated.RoleManager;
 import com.crowdfunding.security.JwtService;
+import com.crowdfunding.enums.UserRole;
 import com.crowdfunding.exception.AuthenticationException;
 import com.crowdfunding.exception.CrowdfundingException;
 
@@ -72,13 +73,13 @@ public class AuthenticationService {
         try {
             RoleManager roleManager = web3Service.loadRoleManager();
             if (roleManager.hasRole(roleManager.DEFAULT_ADMIN_ROLE().send(), address).send()) {
-                return "ADMIN";
+                return UserRole.ADMIN.name();
             } else if (roleManager.hasRole(roleManager.COMMITTEE_ROLE().send(), address).send()) {
-                return "COMMITTEE";
+                return UserRole.COMMITTEE.name();
             } else if (roleManager.hasRole(roleManager.STUDENT_ROLE().send(), address).send()) {
-                return "STUDENT";
+                return UserRole.STUDENT.name();
             } else {
-                return "DONOR";
+                return UserRole.DONOR.name();
             }
         } catch (Exception e) {
             throw new CrowdfundingException("Error determining user role: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
