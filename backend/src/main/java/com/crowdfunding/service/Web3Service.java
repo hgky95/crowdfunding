@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.tx.gas.ContractGasProvider;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.springframework.http.HttpStatus;
+import com.crowdfunding.exception.CrowdfundingException;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +44,10 @@ public class Web3Service {
         return AdminManager.load(adminManagerAddress, web3j, credentials, gasProvider);
     }
 
-    public ProposalManager loadProposalManager(Credentials credentials) {
+    // public ProposalManager loadProposalManager(Credentials credentials) {
+    //     return ProposalManager.load(proposalManagerAddress, web3j, credentials, gasProvider);
+    // }
+    public ProposalManager loadProposalManager() {
         return ProposalManager.load(proposalManagerAddress, web3j, credentials, gasProvider);
     }
 
@@ -56,5 +63,29 @@ public class Web3Service {
         // RoleManager functionality is included in both MilestoneManager and ProposalManager
         // So we can use either of them to load the RoleManager
         return RoleManager.load(milestoneManagerAddress, web3j, credentials, gasProvider);
+    }
+
+    public TransactionReceipt submitSignedTransaction(String signedTransaction) {
+        try {
+            // First send the transaction and get the transaction hash
+            EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(signedTransaction).send();
+            if(ethSendTransaction.getError() != null) {
+                log.info(ethSendTransaction.getError().getMessage());
+                throw new CrowdfundingException(ethSendTransaction.getError().getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            String transactionHash = ethSendTransaction.getTransactionHash();
+
+            // Then wait for the transaction receipt using the hash
+            return web3j.ethGetTransactionReceipt(transactionHash)
+                .send()
+                .getTransactionReceipt()
+                .orElseThrow(() -> new CrowdfundingException(
+                    "Failed to get transaction receipt", 
+                    HttpStatus.INTERNAL_SERVER_ERROR));
+                    
+        } catch (Exception e) {
+            log.error("Failed to submit transaction", e);
+            throw new CrowdfundingException("Failed to submit transaction", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 } 
