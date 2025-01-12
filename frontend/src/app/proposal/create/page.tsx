@@ -17,11 +17,9 @@ export default function CreateProposal() {
 
     setIsSubmitting(true);
     try {
-      //   const provider = new ethers.BrowserProvider(window.ethereum);
-      const provider = new ethers.JsonRpcProvider(
-        process.env.NEXT_PUBLIC_RPC_URL || "http://localhost:8545"
-      );
+      const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
+      const address = await signer.getAddress();
 
       // 1. Get transaction data from backend
       const response = await fetch(
@@ -40,14 +38,22 @@ export default function CreateProposal() {
         throw new Error("Failed to prepare transaction");
       }
 
-      const encodedTransaction = await response.json();
+      const { encodedTransaction } = await response.json();
 
-      // 2. Sign transaction
-      const signedTransaction = await signer.signTransaction(
-        encodedTransaction
-      );
+      // 2. Create transaction object
+      const transaction = {
+        from: address,
+        to: process.env.NEXT_PUBLIC_PROPOSAL_MANAGER_ADDRESS, // Add this to your .env
+        data: encodedTransaction,
+      };
 
-      // 3. Submit signed transaction
+      // 3. Send transaction using MetaMask
+      const txHash = await window.ethereum.request({
+        method: "eth_sendTransaction",
+        params: [transaction],
+      });
+
+      // 4. Submit proposal with transaction hash
       const submitResponse = await fetch(
         `${NEXT_PUBLIC_API_URL}/api/proposals`,
         {
@@ -57,7 +63,7 @@ export default function CreateProposal() {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
-            signedTransaction,
+            transactionHash: txHash,
             ...formData,
           }),
         }

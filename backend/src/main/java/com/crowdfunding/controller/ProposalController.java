@@ -29,8 +29,8 @@ public class ProposalController {
         @AuthenticationPrincipal String address,
         @RequestBody ProposalCreateRequest request
     ) {
-        ProposalCreateResponse response = proposalService.submitSignedTransaction(
-            request.getSignedTransaction(),
+        ProposalCreateResponse response = proposalService.submitProposal(
+            request.getTransactionHash(),
             address,
             request
         );

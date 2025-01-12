@@ -88,4 +88,19 @@ public class Web3Service {
             throw new CrowdfundingException("Failed to submit transaction", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    public TransactionReceipt waitForTransaction(String transactionHash) {
+        try {
+            // Wait for transaction to be mined
+            return web3j.ethGetTransactionReceipt(transactionHash)
+                .send()
+                .getTransactionReceipt()
+                .orElseThrow(() -> new CrowdfundingException(
+                    "Failed to get transaction receipt", 
+                    HttpStatus.INTERNAL_SERVER_ERROR));
+        } catch (Exception e) {
+            log.error("Failed to get transaction receipt", e);
+            throw new CrowdfundingException("Failed to get transaction receipt", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 } 

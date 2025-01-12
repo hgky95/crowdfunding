@@ -44,14 +44,14 @@ public class ProposalService {
         }
     }
 
-    public ProposalCreateResponse submitSignedTransaction(
-        String signedTransaction,
+    public ProposalCreateResponse submitProposal(
+        String transactionHash,
         String address,
         ProposalCreateRequest request
     ) {
         try {
-            // Submit the signed transaction
-            TransactionReceipt receipt = web3Service.submitSignedTransaction(signedTransaction);
+            // Wait for transaction to be mined
+            TransactionReceipt receipt = web3Service.waitForTransaction(transactionHash);
             
             // Get the proposal ID from events
             BigInteger proposalId = getProposalIdFromReceipt(receipt);
@@ -75,7 +75,7 @@ public class ProposalService {
                 .build();
                 
         } catch (Exception e) {
-            log.error("Failed to submit proposal transaction", e);
+            log.error("Failed to submit proposal", e);
             throw new CrowdfundingException("Failed to submit proposal", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
