@@ -18,6 +18,7 @@ contract ProposalManager is RoleManager {
         string title;
         string contentCID;
         string planCID;
+        uint requestedFundingAmount;
         address student;
         ProposalStatus status;
     }
@@ -42,13 +43,15 @@ contract ProposalManager is RoleManager {
     function submitProposal(
         string memory _title,
         string memory _contentCID,
-        string memory _planCID
+        string memory _planCID,
+        uint _requestedFundingAmount
     ) public onlyRole(STUDENT_ROLE) {
         proposals[proposalCount] = ProposalDetails(
             proposalCount,
             _title,
             _contentCID,
             _planCID,
+            _requestedFundingAmount,
             msg.sender,
             ProposalStatus.Pending
         );
