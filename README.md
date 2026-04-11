@@ -6,6 +6,7 @@ This repository contains a Solidity-based crowdfunding system for student projec
 
 This project supports a research direction on improving transparency, interoperability, and accountability in academic crowdfunding using blockchain.  
 The associated paper proposes a cross-chain funding mechanism based on Chainlink CCIP, combined with role-based access control and milestone-based fund distribution to improve security and reduce operational cost.
+Paper link: [IEEE Xplore](https://ieeexplore.ieee.org/document/11296221).
 
 In this repository, the implemented contracts focus on the core governance and accountability layer (roles, proposals, milestones, and funding/disbursement logic), which can be extended into a full CCIP-enabled cross-chain flow.
 
