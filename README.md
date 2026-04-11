@@ -2,6 +2,13 @@
 
 This repository contains a Solidity-based crowdfunding system for student projects, built with Foundry.
 
+## Research Context
+
+This project supports a research direction on improving transparency, interoperability, and accountability in academic crowdfunding using blockchain.  
+The associated paper proposes a cross-chain funding mechanism based on Chainlink CCIP, combined with role-based access control and milestone-based fund distribution to improve security and reduce operational cost.
+
+In this repository, the implemented contracts focus on the core governance and accountability layer (roles, proposals, milestones, and funding/disbursement logic), which can be extended into a full CCIP-enabled cross-chain flow.
+
 ## Overview
 
 The system is organized around proposal submission, committee review, milestone tracking, and fund disbursement using an ERC-20 USDC-like token.
